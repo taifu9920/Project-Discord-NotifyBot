@@ -1,0 +1,27 @@
+{
+  "name": "project-discord-notifybot",
+  "version": "1.0.0",
+  "description": "notifybot",
+  "main": "discord.js",
+  "scripts": {
+    "main": "node discord.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taifu9920/Project-Discord-NotifyBot.git"
+  },
+  "keywords": [
+    "bot"
+  ],
+  "author": "Driftie",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/taifu9920/Project-Discord-NotifyBot/issues"
+  },
+  "homepage": "https://github.com/taifu9920/Project-Discord-NotifyBot#readme",
+  "dependencies": {
+    "discord.js": "^14.5.0",
+    "moment-timezone": "^0.5.37",
+    "node-json-db": "^2.1.3"
+  }
+}
