@@ -1,7 +1,8 @@
 const moment = require('moment');
 const tz = require('moment-timezone');
 const { JsonDB, Config } = require('node-json-db');
-const { token, clientID, commands, meet_day, meet_hour, meet_minute } = require('./token.json');
+const { token, clientID} = require('./token.json');
+const { commands } = require('./commands.json');
 const { ButtonBuilder, ButtonStyle, SlashCommandBuilder, time, REST, Routes, Client, GatewayIntentBits, ActionRowBuilder, SelectMenuBuilder } = require('discord.js');
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] });
 var db = new JsonDB(new Config("data", true, false, '/'));
