@@ -1,0 +1,71 @@
+{
+	"commands": [{
+	  "name": "meeting",
+	  "description": "Commands for 會議小幫手",
+	  "options": [
+		{
+		  "type": 1,
+		  "name": "review",
+		  "description": "Display current configs"
+		},
+		{
+		  "type": 2,
+		  "name": "config",
+		  "description": "Configure",
+		  "options": [
+			{
+			  "type": 1,
+			  "name": "members",
+			  "description": "Modify meeting members"
+			},
+			{
+			  "type": 1,
+			  "name": "clock",
+			  "description": "Set clock channel",
+			  "options": [
+				{
+				  "type": 7,
+				  "name": "channel",
+				  "description": "The channel to be clock channel, no options to clear config"
+				}
+			  ]
+			},
+			{
+			  "type": 1,
+			  "name": "when",
+			  "description": "Schedule the weekly meeting, no options to clear config",
+			  "options": [
+				{
+				  "type": 4,
+				  "name": "day",
+				  "description": "Between 0~6"
+				},
+				{
+				  "type": 4,
+				  "name": "hour",
+				  "description": "Between 0~23"
+				},
+				{
+				  "type": 4,
+				  "name": "minute",
+				  "description": "Between 0~59"
+				}
+			  ]
+			},
+			{
+			  "type": 1,
+			  "name": "meet",
+			  "description": "Set meeting channel, no options to clear config",
+			  "options": [
+				{
+				  "type": 7,
+				  "name": "channel",
+				  "description": "The text channel for meeting"
+				}
+			  ]
+			}
+		  ]
+		}
+	  ]
+	}]
+}
