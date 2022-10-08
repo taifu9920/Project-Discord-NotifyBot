@@ -81,7 +81,6 @@ client.on('ready', async () => {
 	await client.guilds.fetch();
 	let activateGuilds = client.guilds.cache.map(x=>x.id);
 	console.log("Activate in guilds:", activateGuilds);
-	meetingStart("1027225130839060510")
 	// Clock Channel
 	const timeNow = moment().tz("Asia/Taipei").format("HH:mm (z)");
 	console.log(`Current time check: ${moment().tz("Asia/Taipei")}`)
