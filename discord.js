@@ -13,6 +13,7 @@ reschedule = async()=>{
 	//Remove all running schedule
 	running[0].forEach(x=>clearInterval(x))
 	running[1].forEach(x=>clearTimeout(x))
+	
 	//Schedule
 	var meetings = (await Promise.all(client.guilds.cache.map(x=>x.id).map(x=> db.getData(`/${x}/when`).catch(()=>{})))).filter(x=>x != undefined)
 	for (i = 0; i < meetings.length; i++){
@@ -50,21 +51,28 @@ meetschedule = async(guildID, wait) => {
 
 
 meetingStart = async (guildID) => {
-	let host = "測試"
-	let record = "測試2"
+	await client.guilds.fetch();
+	await client.guilds.cache.get(guildID).members.fetch();
+	let host = await db.getData(`/${guildID}/host`).catch(()=>{});
+	if (host == undefined) host = 0
+	let record = await db.getData(`/${guildID}/record`).catch(()=>{});
+	if (record == undefined) record = 1
+	let ids = await db.getData(`/${guildID}/members`).catch(()=>{});
+	let names = client.guilds.cache.get(guildID).members.cache.filter(x => ids.includes(x.id)).sort((a,b) => (a.nickname != null ? a.nickname : a.user.username).localeCompare(b.nickname != null ? b.nickname : b.user.username)).map(x=>x.nickname != null ? x.nickname : x.user.username)
 	let channel = await db.getData(`/${guildID}/meet`).catch(()=>{});
 	const thread = await client.channels.cache.get(channel).threads.create({
 		name: moment().tz("Asia/Taipei").format("YYYY-MM-DD"),
 		autoArchiveDuration: 60
 	});
-	await thread.send(`- 每周會議 - \n\n主持人：${host}\n紀錄人：${record}`)
-	let ids = await db.getData(`/${guildID}/members`).catch(()=>{});
+	await thread.send(`- 每周會議 - \n\n主持人：<@${ids[host]}>\n紀錄人：<@${ids[record]}>`)
 	if (ids != undefined){ //Only start discuss when there're members
 		await ids.forEach(x => thread.members.add(x));
 		console.log(`Created thread: ${thread.name}`);
 		let tags = ids.map(x=>`<@${x}>`).join("\n")
 		await thread.send(`各位起床開會囉！！！！！\n${tags}`)
 	}
+	db.push(`/${guildID}/host`, (host+1) % ids.length);
+	db.push(`/${guildID}/record`, (record+1) % ids.length);
 }
 
 // Bot actions
@@ -73,7 +81,7 @@ client.on('ready', async () => {
 	await client.guilds.fetch();
 	let activateGuilds = client.guilds.cache.map(x=>x.id);
 	console.log("Activate in guilds:", activateGuilds);
-	
+	meetingStart("1027225130839060510")
 	// Clock Channel
 	const timeNow = moment().tz("Asia/Taipei").format("HH:mm (z)");
 	console.log(`Current time check: ${moment().tz("Asia/Taipei")}`)
@@ -102,10 +110,12 @@ client.on('interactionCreate', async interaction => {
 	if (!interaction.isSelectMenu()) return;
 
 	if (interaction.customId === 'config_members') {
-		db.push(`/${interaction.guild.id}/members`, interaction.values);
 		await interaction.guild.members.fetch()
-		let names = interaction.guild.members.cache.filter(x => interaction.values.includes(x.id)).map(x=>x.nickname != null ? x.nickname : x.user.username)
-
+		let datas = interaction.values.map(x=> [x.substring(0, 18), x.substring(18)])
+		datas.sort((a,b) => a[1].localeCompare(b[1]))
+		let ids = datas.map(x=>x[0])
+		db.push(`/${interaction.guild.id}/members`, ids);
+		let names = datas.map(x=>x[1])
 		await interaction.update({ content: `Configure successful!\n\nMembers:\n${names.join("\n")}`, components: [] });
 	}
 });
@@ -128,8 +138,8 @@ client.on('interactionCreate', async interaction => {
 			let options = [];
 			interaction.guild.members.cache.filter(x => x.id != client.user.id).each(x => options.push({
 				label: x.nickname != null ? x.nickname : x.user.username,
-				description: 'test',
-				value: x.id,
+				description: '伺服器成員',
+				value: x.id + (x.nickname != null ? x.nickname : x.user.username),
 			}))
 			const row = new ActionRowBuilder().addComponents(
 				new SelectMenuBuilder()
@@ -163,6 +173,8 @@ client.on('interactionCreate', async interaction => {
 			let when = await db.getData(`/${interaction.guild.id}/when`).catch(()=>{})
 			let clock = await db.getData(`/${interaction.guild.id}/clock`).catch(()=>{})
 			let meet = await db.getData(`/${interaction.guild.id}/meet`).catch(()=>{})
+			let host = await db.getData(`/${interaction.guild.id}/host`).catch(()=>{})
+			let record = await db.getData(`/${interaction.guild.id}/record`).catch(()=>{})
 			let message = "Status:\n";
 			let meetingFunction = 0;
 			
@@ -187,10 +199,22 @@ client.on('interactionCreate', async interaction => {
 			}else message += `Meeting channel not set.\n`
 			if (ids != undefined){
 				await interaction.guild.members.fetch()
-				let names = interaction.guild.members.cache.filter(x => ids.includes(x.id)).map(x=>x.nickname != null ? x.nickname : x.user.username)
+				var names = interaction.guild.members.cache.filter(x => ids.includes(x.id)).sort((a,b) => (a.nickname != null ? a.nickname : a.user.username).localeCompare(b.nickname != null ? b.nickname : b.user.username)).map(x=>x.nickname != null ? x.nickname : x.user.username)
 				message += `Team members in config:\n**${names.join("\n")}**\n\n`
 			}else message += `No meeting members.\n\n`
-			if(clock != undefined) message+=`Clock channel: <#${clock}>`
+			if(clock != undefined) message+=`Clock channel: <#${clock}>\n`
+			if (ids != undefined && names.length > 1){
+				if (host == undefined || host < 0 || host > names.length) {
+					host = 0
+					db.push(`/${interaction.guild.id}/host`, host)
+				}
+				if (record == undefined || record < 0 || record > names.length) {
+					record = 1
+					db.push(`/${interaction.guild.id}/record`, record)
+				}
+				message += `Host in next meeting: **${names[host]}**\n`
+				message += `Record in next meeting: **${names[record]}**`
+			}
 			await interaction.reply(message)
 		}else if (interaction.options.getSubcommand() === 'when'){
 			let datas = ["day", "hour", "minute"].map(x => interaction.options.getInteger(x))
@@ -220,6 +244,14 @@ client.on('interactionCreate', async interaction => {
 				await db.delete(`/${interaction.guild.id}/meet`);
 				await interaction.reply(`Clock channel config removed!`);
 			}
+		}else if (interaction.options.getSubcommand() === 'host'){
+			let index = interaction.options.getInteger("order")
+			db.push(`/${interaction.guild.id}/host`, index)
+			await interaction.reply(`Configured next meeting host.`);
+		}else if (interaction.options.getSubcommand() === 'record'){
+			let index = interaction.options.getInteger("order")
+			db.push(`/${interaction.guild.id}/record`, index)
+			await interaction.reply(`Configured next meeting record.`);
 		}
 	}
 });

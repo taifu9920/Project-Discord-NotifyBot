@@ -63,6 +63,32 @@
 				  "description": "The text channel for meeting"
 				}
 			  ]
+			},
+			{
+			  "type": 1,
+			  "name": "host",
+			  "description": "Set who host the next meeting",
+			  "options": [
+				{
+				  "type": 4,
+				  "name": "order",
+				  "description": "The order integer",
+				  "required": true
+				}
+			  ]
+			},
+			{
+			  "type": 1,
+			  "name": "record",
+			  "description": "Set who record the next meeting",
+			  "options": [
+				{
+				  "type": 4,
+				  "name": "order",
+				  "description": "The order integer",
+				  "required": true
+				}
+			  ]
 			}
 		  ]
 		}
