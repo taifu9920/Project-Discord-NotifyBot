@@ -7,7 +7,9 @@ The bot to alert meeting.
 | /meeting config clock | [channel] | Set clock channel |
 | /meeting config when | [day:integer] [hour:integer] [minute:integer] | Schedule the weekly meeting, no options to clear config |
 | /meeting config meet | [channel] | Set meeting channel, no options to clear config |
-| /meeting review  | None | Display current configs |
+| /meeting review | None | Display current configs |
+| /meeting config host | <order> | Set who host the next meeting |
+| /meeting config record | <order> | Set who record the next meeting |
 ## How to run
 1. Clone this repo by `git clone git@github.com:taifu9920/Project-Discord-NotifyBot.git`
 2. run `npm install`
